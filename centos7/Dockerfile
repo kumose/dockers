@@ -5,14 +5,33 @@ ARG TARGETARCH
 # Fix EOL repos: centos 7 went EOL June 2024
 RUN sed -i 's|mirror.centos.org|vault.centos.org|g; s|^#baseurl|baseurl|; s|^mirrorlist|#mirrorlist|' /etc/yum.repos.d/*.repo
 
-# devtoolset-11: gcc 11 (system gcc 4.8 is too old for cmake 3.31)
-# centos-release-scl installs new .repo files, fix them to vault too
+# devtoolset-9: gcc 9 (system gcc 4.8 is too old for cmake 3.31)
+# vault paths differ per arch: x86_64 at /centos/7/sclo, aarch64 at /altarch/7/sclo
 RUN yum install -y centos-release-scl && \
-    sed -i 's|mirror.centos.org|vault.centos.org|g; s|^#baseurl|baseurl|; s|^mirrorlist|#mirrorlist|' /etc/yum.repos.d/*.repo && \
-    yum install -y devtoolset-11-gcc devtoolset-11-gcc-c++ && \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+        SCL_BASE="https://vault.centos.org/centos/7/sclo/\$basearch"; \
+    else \
+        SCL_BASE="https://vault.centos.org/altarch/7/sclo/\$basearch"; \
+    fi; \
+    cat > /etc/yum.repos.d/CentOS-SCLo-scl.repo <<EOF
+[centos-sclo-sclo]
+name=CentOS-7 - SCLo scl
+baseurl=${SCL_BASE}/sclo/
+gpgcheck=0
+enabled=1
+EOF
+    cat > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo <<EOF
+[centos-sclo-sclo-rh]
+name=CentOS-7 - SCLo scl-rh
+baseurl=${SCL_BASE}/rh/
+gpgcheck=0
+enabled=1
+EOF
+    yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ && \
     yum clean all
-ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib
+
+ENV PATH=/opt/rh/devtoolset-9/root/usr/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib
 
 # EPEL + base tools
 RUN yum install -y epel-release && \
