@@ -13,20 +13,8 @@ RUN yum install -y centos-release-scl && \
     else \
         SCL_BASE="https://vault.centos.org/altarch/7/sclo/\$basearch"; \
     fi; \
-    cat > /etc/yum.repos.d/CentOS-SCLo-scl.repo <<EOF
-[centos-sclo-sclo]
-name=CentOS-7 - SCLo scl
-baseurl=${SCL_BASE}/sclo/
-gpgcheck=0
-enabled=1
-EOF
-    cat > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo <<EOF
-[centos-sclo-sclo-rh]
-name=CentOS-7 - SCLo scl-rh
-baseurl=${SCL_BASE}/rh/
-gpgcheck=0
-enabled=1
-EOF
+    printf '[centos-sclo-sclo]\nname=CentOS-7 - SCLo scl\nbaseurl=%s/sclo/\ngpgcheck=0\nenabled=1\n' "$SCL_BASE" > /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
+    printf '[centos-sclo-sclo-rh]\nname=CentOS-7 - SCLo scl-rh\nbaseurl=%s/rh/\ngpgcheck=0\nenabled=1\n' "$SCL_BASE" > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
     yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ && \
     yum clean all
 
