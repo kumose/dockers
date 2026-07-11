@@ -8,6 +8,7 @@ RUN apk add --no-cache \
         curl \
         git \
         python3 \
+        py3-pip \
         make \
         autoconf \
         libtool \
