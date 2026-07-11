@@ -59,7 +59,6 @@ jobs:
               CHANGED="$NAME"
             fi
           elif [[ "${{ github.event.before }}" =~ ^0+$ ]]; then
-            # first commit in repo — build everything
             CHANGED="$ALL_NAMES"
           else
             CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '/(Dockerfile|VERSION)$' | sed 's|/.*||' | sort -u)
@@ -96,6 +95,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Read version
+        id: version
+        run: echo "v=$(cat ${{ matrix.name }}/VERSION | tr -d ' \t\n')" >> $GITHUB_OUTPUT
+
       - name: Log in to GHCR
         if: github.event_name == 'workflow_dispatch' && inputs.push
         uses: docker/login-action@v3
@@ -104,6 +107,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build and push
+        if: github.event_name == 'workflow_dispatch' && inputs.push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.name }}
+          file: Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}
+            ${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:latest
+          push: true
+
+      - name: Smoke test
+        if: github.event_name == 'workflow_dispatch' && inputs.push
+        run: |
+          docker pull "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}"
+          docker run --rm "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}" sh -c '
+            echo "=== cmake ===" && cmake --version
+            echo "=== ninja ===" && ninja --version
+            echo "=== gcc ===" && gcc --version 2>&1 | head -1
+            echo "=== python3 ===" && python3 --version
+            echo "=== git ===" && git --version
+            echo "=== curl ===" && curl --version | head -1
+            echo "=== make ===" && make --version | head -1
+            echo "=== autoconf ===" && autoconf --version | head -1
+            echo "=== pkg-config ===" && pkg-config --version
+            echo "All tools verified OK"
+          '
+
       - name: Build (verify)
         if: github.event_name != 'workflow_dispatch' || !inputs.push
         uses: docker/build-push-action@v6
@@ -111,8 +143,3 @@ jobs:
           context: ${{ matrix.name }}
           file: Dockerfile
           platforms: linux/${{ matrix.arch }}
-
-      - name: Build and push
-        if: github.event_name == 'workflow_dispatch' && inputs.push
-        run: |
-          ./scripts/build.sh --push ${{ matrix.name }} ${{ matrix.arch }}
