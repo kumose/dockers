@@ -128,8 +128,10 @@ jobs:
       - name: Smoke test
         if: github.event_name == 'workflow_dispatch' && inputs.push
         run: |
-          docker pull "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}"
-          docker run --rm "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}" sh -c '
+          docker pull --platform "linux/${{ matrix.arch }}" \
+            "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}"
+          docker run --rm --platform "linux/${{ matrix.arch }}" \
+            "${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}" sh -c '
             echo "=== cmake ===" && cmake --version
             echo "=== ninja ===" && ninja --version
             echo "=== gcc ===" && gcc --version 2>&1 | head -1
