@@ -14,9 +14,11 @@ BASE_IMAGE[debian11]="debian:11-slim"
 BASE_IMAGE[debian12]="debian:12-slim"
 BASE_IMAGE[alpine319]="alpine:3.19"
 BASE_IMAGE[alpine320]="alpine:3.20"
+BASE_IMAGE[centos7]="centos:7"
+BASE_IMAGE[centos8]="centos:8"
 BASE_IMAGE[centos9]="quay.io/centos/centos:stream9"
 
-ALL_NAMES=(ubuntu20 ubuntu22 ubuntu24 debian11 debian12 alpine319 alpine320 centos9)
+ALL_NAMES=(ubuntu20 ubuntu22 ubuntu24 debian11 debian12 alpine319 alpine320 centos7 centos8 centos9)
 
 usage() {
     echo "Usage: $0 [options] <name> <arch>"

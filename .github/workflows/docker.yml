@@ -29,6 +29,8 @@ on:
           - debian12
           - alpine319
           - alpine320
+          - centos7
+          - centos8
           - centos9
         default: auto
       push:
@@ -55,7 +57,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          ALL_NAMES="ubuntu20 ubuntu22 ubuntu24 debian11 debian12 alpine319 alpine320 centos9"
+          ALL_NAMES="ubuntu20 ubuntu22 ubuntu24 debian11 debian12 alpine319 alpine320 centos7 centos8 centos9"
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             NAME="${{ inputs.name }}"
