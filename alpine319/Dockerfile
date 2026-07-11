@@ -4,6 +4,7 @@ ARG TARGETARCH
 
 RUN apk add --no-cache \
         build-base \
+        linux-headers \
         curl \
         git \
         python3 \
