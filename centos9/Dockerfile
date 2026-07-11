@@ -4,7 +4,7 @@ ARG TARGETARCH
 
 RUN dnf install -y dnf-plugins-core epel-release
 RUN /usr/bin/crb enable
-RUN dnf install -y gcc-c++ curl-minimal git make autoconf libtool python3 python3-pip ninja-build openssl-devel pkgconfig zip unzip ca-certificates perl-IPC-Cmd
+RUN dnf install -y gcc-c++ curl-minimal git make autoconf libtool python3 python3-pip ninja-build openssl-devel pkgconfig perl perl-IPC-Cmd zip unzip ca-certificates
 RUN dnf clean all
 
 RUN case "${TARGETARCH}" in \

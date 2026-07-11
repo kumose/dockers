@@ -4,6 +4,7 @@ ARG TARGETARCH
 
 RUN apk add --no-cache \
         bash \
+        perl \
         build-base \
         linux-headers \
         curl \

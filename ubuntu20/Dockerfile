@@ -4,6 +4,7 @@ ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        perl \
         curl \
         git \
         python3 \
