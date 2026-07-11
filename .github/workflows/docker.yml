@@ -113,8 +113,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.name }}
-          file: Dockerfile
+          context: .
+          file: ${{ matrix.name }}/Dockerfile
           platforms: linux/${{ matrix.arch }}
           tags: |
             ${{ env.REGISTRY }}/kumo-${{ matrix.name }}-${{ matrix.arch }}:${{ steps.version.outputs.v }}
@@ -142,6 +142,6 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || !inputs.push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.name }}
-          file: Dockerfile
+          context: .
+          file: ${{ matrix.name }}/Dockerfile
           platforms: linux/${{ matrix.arch }}
