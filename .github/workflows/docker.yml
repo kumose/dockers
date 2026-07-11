@@ -49,13 +49,18 @@ jobs:
 
       - id: set-matrix
         run: |
+          ALL_NAMES="ubuntu20 ubuntu22 ubuntu24 debian11 debian12 alpine319 alpine320 centos9"
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             NAME="${{ inputs.name }}"
             if [[ "$NAME" == "auto" ]]; then
-              CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u)
+              CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u || true)
             else
               CHANGED="$NAME"
             fi
+          elif [[ "${{ github.event.before }}" =~ ^0+$ ]]; then
+            # first commit in repo — build everything
+            CHANGED="$ALL_NAMES"
           else
             CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u)
           fi
