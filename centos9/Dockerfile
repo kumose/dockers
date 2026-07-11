@@ -2,26 +2,10 @@ FROM quay.io/centos/centos:stream9
 
 ARG TARGETARCH
 
-RUN dnf install -y \
-        dnf-plugins-core \
-        epel-release \
-    && /usr/bin/crb enable \
-    && dnf install -y \
-        gcc-c++ \
-        curl \
-        git \
-        python3 \
-        python3-pip \
-        ninja-build \
-        make \
-        autoconf \
-        libtool \
-        pkgconfig \
-        openssl-devel \
-        zip \
-        unzip \
-        ca-certificates \
-    && dnf clean all
+RUN dnf install -y dnf-plugins-core epel-release
+RUN /usr/bin/crb enable
+RUN dnf install -y gcc-c++ curl git python3 python3-pip ninja-build make autoconf libtool pkgconfig openssl-devel zip unzip ca-certificates
+RUN dnf clean all
 
 RUN case "${TARGETARCH}" in \
         amd64) CMAKE_ARCH="x86_64" ;; \
