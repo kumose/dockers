@@ -23,7 +23,7 @@ ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/roo
 
 # EPEL + base tools
 RUN yum install -y epel-release && \
-    yum install -y curl git python38 python38-pip make autoconf libtool pkgconfig openssl-devel zip unzip ca-certificates && \
+    yum install -y curl git python38 python38-pip make autoconf libtool pkgconfig openssl-devel zip unzip ca-certificates perl-IPC-Cmd && \
     yum clean all
 
 # python38 provides python3.8, not python3

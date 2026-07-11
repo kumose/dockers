@@ -8,7 +8,7 @@ RUN sed -i 's|mirror.centos.org|vault.centos.org|g; s|^#baseurl|baseurl|; s|^mir
 # EPEL + tools (gcc 8.5 can compile cmake 3.31)
 # curl-minimal is pre-installed on centos:8, installing curl conflicts
 RUN dnf install -y epel-release && \
-    dnf install -y gcc-c++ git python38 python38-pip make autoconf libtool pkgconfig openssl-devel zip unzip ca-certificates && \
+    dnf install -y gcc-c++ git python38 python38-pip make autoconf libtool pkgconfig openssl-devel zip unzip ca-certificates perl-IPC-Cmd && \
     dnf clean all
 
 # python38 provides python3.8, not python3
