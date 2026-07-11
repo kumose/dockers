@@ -54,7 +54,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             NAME="${{ inputs.name }}"
             if [[ "$NAME" == "auto" ]]; then
-              CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u || true)
+              CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '/(Dockerfile|VERSION)$' | sed 's|/.*||' | sort -u || true)
             else
               CHANGED="$NAME"
             fi
@@ -62,7 +62,7 @@ jobs:
             # first commit in repo — build everything
             CHANGED="$ALL_NAMES"
           else
-            CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u)
+            CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '/(Dockerfile|VERSION)$' | sed 's|/.*||' | sort -u)
           fi
 
           if [[ -z "$CHANGED" ]]; then
