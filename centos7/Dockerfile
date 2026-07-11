@@ -45,3 +45,4 @@ RUN git clone --depth 1 -b v1.13.1 https://github.com/ninja-build/ninja.git /tmp
     cmake --build /tmp/ninja-build --parallel && \
     cp /tmp/ninja-build/ninja /usr/local/bin/ && \
     rm -rf /tmp/ninja /tmp/ninja-build
+# rebuild: perl+bash+kernel-headers

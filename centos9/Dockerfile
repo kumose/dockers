@@ -15,3 +15,4 @@ RUN case "${TARGETARCH}" in \
     curl -fsSL "https://github.com/Kitware/CMake/releases/download/v3.31.10/cmake-3.31.10-linux-${CMAKE_ARCH}.tar.gz" | \
     tar xz --strip-components=1 -C /usr/local && \
     cmake --version
+# rebuild: perl+bash+kernel-headers
