@@ -3,6 +3,7 @@ FROM alpine:3.19
 ARG TARGETARCH
 
 RUN apk add --no-cache \
+        bash \
         build-base \
         linux-headers \
         curl \
