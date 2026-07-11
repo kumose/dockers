@@ -1,0 +1,113 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '**/Dockerfile'
+      - '**/VERSION'
+      - 'scripts/build.sh'
+  pull_request:
+    branches: [master]
+    paths:
+      - '**/Dockerfile'
+      - '**/VERSION'
+      - 'scripts/build.sh'
+  workflow_dispatch:
+    inputs:
+      name:
+        description: System to build
+        type: choice
+        options:
+          - auto
+          - ubuntu20
+          - ubuntu22
+          - ubuntu24
+          - debian11
+          - debian12
+          - alpine319
+          - alpine320
+          - centos9
+        default: auto
+      push:
+        description: Push to GHCR
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: set-matrix
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            NAME="${{ inputs.name }}"
+            if [[ "$NAME" == "auto" ]]; then
+              CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u)
+            else
+              CHANGED="$NAME"
+            fi
+          else
+            CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '/Dockerfile$' | sed 's|/Dockerfile||' | sort -u)
+          fi
+
+          if [[ -z "$CHANGED" ]]; then
+            echo "matrix={\"name\":[]}" >> $GITHUB_OUTPUT
+          else
+            JSON="["
+            FIRST=true
+            for n in $CHANGED; do
+              if [ "$FIRST" = true ]; then FIRST=false; else JSON+=","; fi
+              JSON+="\"$n\""
+            done
+            JSON+="]"
+            echo "matrix={\"name\":$JSON}" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.matrix != '{"name":[]}'
+    strategy:
+      fail-fast: false
+      matrix:
+        name: ${{ fromJSON(needs.detect.outputs.matrix).name }}
+        arch: [amd64, arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name == 'workflow_dispatch' && inputs.push
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (verify)
+        if: github.event_name != 'workflow_dispatch' || !inputs.push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.name }}
+          file: Dockerfile
+          platforms: linux/${{ matrix.arch }}
+
+      - name: Build and push
+        if: github.event_name == 'workflow_dispatch' && inputs.push
+        run: |
+          ./scripts/build.sh --push ${{ matrix.name }} ${{ matrix.arch }}
